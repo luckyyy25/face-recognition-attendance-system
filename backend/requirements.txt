@@ -6,3 +6,4 @@ numpy
 deepface
 tf-keras
 pymongo
+dnspython
