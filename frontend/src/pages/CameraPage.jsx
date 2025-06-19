@@ -6,10 +6,9 @@ const CameraPage = () => {
   const [intervalId, setIntervalId] = useState(null);
   const audioRef = useRef(null);
 
-const startRecognition = async () => {
-  setIsActive(true);
-  await fetch('http://localhost:5000/start_camera');
-
+  const startRecognition = async () => {
+    setIsActive(true);
+    await fetch('http://localhost:5000/start_camera');
 
     const id = setInterval(async () => {
       try {
@@ -21,12 +20,10 @@ const startRecognition = async () => {
           setIdentity(name);
           if (audioRef.current) audioRef.current.play();
 
-          // 5 saniye sonra mesajı kaldır
           setTimeout(() => {
             setIdentity(null);
           }, 5000);
         } else {
-          // Tanıma başarısızsa kimliği sıfırla
           setIdentity(null);
         }
       } catch (error) {
@@ -50,48 +47,50 @@ const startRecognition = async () => {
 
   useEffect(() => {
     return () => {
-      stopCamera(); // sayfa terk edildiğinde kamera durdurulsun
+      stopCamera();
     };
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Face Recognition Camera</h1>
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
+      <div className="bg-gray-100 p-10 rounded-3xl border border-gray-200 shadow-2xl w-full max-w-5xl">
 
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <div className="relative">
-          <div className="bg-gray-800 w-full h-96 rounded-lg flex items-center justify-center overflow-hidden relative">
-            {isActive ? (
-              <img
-                src={`http://localhost:5000/video_feed?ts=${Date.now()}`}
-                alt="Camera feed"
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <p className="text-white text-lg">Click the button to start camera</p>
-            )}
+        <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          Face Recognition Camera
+        </h1>
 
-            {isActive && identity && (
-              <div className="absolute top-5 left-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg animate-bounce z-20">
-                Welcome, <strong>{identity}</strong>
-              </div>
-            )}
-          </div>
+        <div className="relative bg-gray-800 rounded-2xl overflow-hidden shadow-lg h-[32rem] flex items-center justify-center">
+          {isActive ? (
+            <img
+              src={`http://localhost:5000/video_feed?ts=${Date.now()}`}
+              alt="Camera feed"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <p className="text-white text-lg">Click below to start recognition</p>
+          )}
 
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={startRecognition}
-              disabled={isActive}
-              className={`px-6 py-2 rounded-lg font-medium ${
-                isActive
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
-            >
-              {isActive ? 'Recognition Active' : 'Start Recognition'}
-            </button>
-          </div>
+          {isActive && identity && (
+            <div className="absolute top-6 left-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg animate-bounce text-lg font-semibold">
+              Welcome, <span className="font-bold">{identity}</span> 🎉
+            </div>
+          )}
         </div>
+
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={startRecognition}
+            disabled={isActive}
+            className={`px-10 py-4 rounded-full font-semibold text-lg transition ${
+              isActive
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-primary text-white hover:bg-indigo-700 shadow-md'
+            }`}
+          >
+            {isActive ? 'Recognition Active' : 'Start Recognition'}
+          </button>
+        </div>
+
       </div>
 
       <audio ref={audioRef}>
