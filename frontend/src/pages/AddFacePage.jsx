@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useState } from 'react';
+import { FaUser, FaIdBadge, FaUserTie, FaImage } from 'react-icons/fa';
 
 const AddFacePage = () => {
   const [formData, setFormData] = useState({
@@ -13,137 +14,148 @@ const AddFacePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({
-        ...formData,
-        image: file
-      });
-      
+      setFormData({ ...formData, image: file });
       const reader = new FileReader();
-      reader.onload = () => {
-        setImagePreview(reader.result);
-      };
+      reader.onload = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('id', formData.id);
+    data.append('role', formData.role);
+    data.append('image', formData.image);
 
-  const data = new FormData();
-  data.append('name', formData.name);
-  data.append('id', formData.id);
-  data.append('role', formData.role);
-  data.append('image', formData.image);
-
-  try {
-    const response = await axios.post('http://localhost:5000/api/employees', data);
-    console.log('Success:', response.data);
-    setIsSubmitted(true);
-  } catch (error) {
-    console.error('Error uploading data:', error);
-  }
-};
-
+    try {
+      const response = await axios.post('http://localhost:5000/api/employees', data);
+      console.log('Success:', response.data);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error uploading data:', error);
+    }
+  };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold text-center mb-6">Register New Face</h1>
-      
-      {isSubmitted ? (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          <p>Face registered successfully!</p>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-              Full Name
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
+      <div className="bg-gray-100 p-10 rounded-3xl border border-gray-200 shadow-2xl w-full max-w-lg">
+        <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          Register New Face
+        </h1>
+
+        {isSubmitted ? (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-md mb-4 text-center">
+            <p className="text-lg font-semibold">Face registered successfully!</p>
           </div>
-          
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
-              ID Number
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="id"
-              name="id"
-              type="text"
-              value={formData.id}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="role">
-              Role
-            </label>
-            <select
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select a role</option>
-              <option value="employee">Employee</option>
-              <option value="student">Student</option>
-              <option value="visitor">Visitor</option>
-            </select>
-          </div>
-          
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-              Upload Photo
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="image"
-              name="image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              required
-            />
-            
-            {imagePreview && (
-              <div className="mt-4">
-                <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded" />
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+
+            <FormInput label="Full Name" name="name" value={formData.name} onChange={handleChange} icon={<FaUser />} />
+            <FormInput label="ID Number" name="id" value={formData.id} onChange={handleChange} icon={<FaIdBadge />} />
+
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Role
+              </label>
+              <div className="flex gap-3">
+                  {['Employee', 'Student', 'Visitor'].map((option) => {
+                    const roleValue = option.toLowerCase();
+                    const isActive = formData.role === roleValue;
+
+                    let bgColor = '';
+                    let textColor = 'text-white';
+                    if (roleValue === 'employee') bgColor = 'bg-orange-500';
+                    if (roleValue === 'student') bgColor = 'bg-red-600';
+                    if (roleValue === 'visitor') bgColor = 'bg-gray-800';
+
+                    if (isActive) {
+                      bgColor = 'bg-white';
+                      textColor = 'text-gray-800 font-bold';
+                    }
+
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`px-6 py-3 rounded-lg border border-transparent font-semibold transition ${bgColor} ${textColor} ${isActive ? 'shadow-md scale-105' : 'opacity-90 hover:opacity-100'}`}
+                        onClick={() => setFormData({ ...formData, role: roleValue })}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-medium mb-2" htmlFor="image">
+                Upload Photo
+              </label>
+              <div className="relative">
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  required
+                  className="w-full py-3 px-4 pl-12 rounded-lg bg-[#f5f5f5] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
+                  <FaImage />
+                </div>
               </div>
-            )}
-          </div>
-          
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-            type="submit"
-          >
-            Register Face
-          </button>
-        </form>
-      )}
+
+              {imagePreview && (
+                <div className="mt-4">
+                  <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg shadow-md" />
+                </div>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-primary text-white py-3 rounded-full font-semibold shadow-md hover:bg-indigo-700 transition"
+            >
+              Register Face
+            </button>
+
+          </form>
+        )}
+      </div>
     </div>
   );
 };
+
+const FormInput = ({ label, name, value, onChange, icon }) => (
+  <div>
+    <label className="block text-gray-700 font-medium mb-2" htmlFor={name}>
+      {label}
+    </label>
+    <div className="relative">
+      <input
+        id={name}
+        name={name}
+        type="text"
+        value={value}
+        onChange={onChange}
+        required
+        className="w-full py-3 px-4 pl-12 rounded-lg bg-[#f5f5f5] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+      />
+      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
+        {icon}
+      </div>
+    </div>
+  </div>
+);
 
 export default AddFacePage;

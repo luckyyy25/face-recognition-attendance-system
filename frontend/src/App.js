@@ -8,9 +8,9 @@ import CameraPage from './pages/CameraPage';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen w-full bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="pt-24 px-4">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/add-face" element={<AddFacePage />} />
