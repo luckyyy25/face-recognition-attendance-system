@@ -2,9 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 
 const CameraPage = () => {
   const [isActive, setIsActive] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [identity, setIdentity] = useState(null);
+  const [showCrowdWarning, setShowCrowdWarning] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const audioRef = useRef(null);
+  const crowdAudioRef = useRef(null);
+  const CROWD_LIMIT = 2; // easily changeable limit
 
   const startRecognition = async () => {
     setIsActive(true);
@@ -15,19 +18,33 @@ const CameraPage = () => {
         const response = await fetch(`http://localhost:5000/detect?ts=${Date.now()}`);
         const data = await response.json();
 
-        if (data.status === 'success' && data.message) {
-          setMessage(data.message);
+        if (data.status === 'success') {
+          const name = data.identity.split('/').pop().split('.')[0];
+          setIdentity(name);
           if (audioRef.current) audioRef.current.play();
 
           setTimeout(() => {
-            setMessage(null);
+            setIdentity(null);
           }, 5000);
         } else {
-          setMessage(null);
+          setIdentity(null);
+        }
+
+        // Crowd detection logic
+        const facesResponse = await fetch(`http://localhost:5000/faces_count?ts=${Date.now()}`);
+        const facesData = await facesResponse.json();
+        if (facesData.count > CROWD_LIMIT) {
+          if (!showCrowdWarning) {
+            setShowCrowdWarning(true);
+            if (crowdAudioRef.current) crowdAudioRef.current.play();
+            setTimeout(() => {
+              setShowCrowdWarning(false);
+            }, 5000);
+          }
         }
       } catch (error) {
-        console.error('Face detection error:', error);
-        setMessage(null);
+        console.error('Error:', error);
+        setIdentity(null);
       }
     }, 4000);
 
@@ -51,52 +68,59 @@ const CameraPage = () => {
   }, []);
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
-      <div className="bg-gray-100 p-10 rounded-3xl border border-gray-200 shadow-2xl w-full max-w-5xl">
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Face Recognition Camera</h1>
 
-        <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-          Face Recognition Camera
-        </h1>
-
-        <div className="relative bg-gray-800 rounded-2xl overflow-hidden shadow-lg h-[32rem] flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md relative">
+        <div className="relative bg-gray-800 dark:bg-black w-full h-96 rounded-lg flex items-center justify-center overflow-hidden">
           {isActive ? (
             <img
               src={`http://localhost:5000/video_feed?ts=${Date.now()}`}
               alt="Camera feed"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           ) : (
-            <p className="text-white text-lg">Click below to start recognition</p>
+            <p className="text-white text-lg">Click the button to start camera</p>
           )}
 
-          {isActive && message && (
-            <div className={`absolute top-6 left-6 px-6 py-3 rounded-xl shadow-lg animate-bounce text-lg font-semibold
-              ${message.type === 'entry' ? 'bg-green-500 text-white' : message.type === 'exit' ? 'bg-purple-500 text-white' : 'bg-yellow-500 text-white'}`}>
-              <div>{message.title}</div>
-              <div>{message.text}</div>
+          {isActive && identity && (
+            <div className="absolute top-5 left-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg animate-bounce z-20">
+              Welcome, <strong>{identity}</strong>
+            </div>
+          )}
+
+          {showCrowdWarning && (
+            <div className="absolute inset-0 bg-red-600 bg-opacity-80 flex items-center justify-center z-30">
+              <h2 className="text-4xl font-bold text-white">⚠ CROWD DETECTED</h2>
             </div>
           )}
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-4 flex justify-center">
           <button
             onClick={startRecognition}
             disabled={isActive}
-            className={`px-10 py-4 rounded-full font-semibold text-lg transition ${
+            className={`px-6 py-2 rounded-lg font-medium ${
               isActive
                 ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-primary text-white hover:bg-indigo-700 shadow-md'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
             {isActive ? 'Recognition Active' : 'Start Recognition'}
           </button>
         </div>
-
       </div>
 
       <audio ref={audioRef}>
         <source
           src="https://www.myinstants.com/media/sounds/mouse-click.mp3"
+          type="audio/mpeg"
+        />
+      </audio>
+
+      <audio ref={crowdAudioRef}>
+        <source
+          src="https://www.myinstants.com/media/sounds/alarm.mp3"
           type="audio/mpeg"
         />
       </audio>

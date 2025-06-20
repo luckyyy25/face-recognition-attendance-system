@@ -105,11 +105,23 @@ def video_feed():
 
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# Kamera durdurma endpointi
+# Camera stop endpoint
 @app.route('/stop_camera')
 def stop_camera_route():
     stop_camera()
     return jsonify({"status": "camera stopped"})
+
+# New endpoint to count faces
+@app.route('/faces_count')
+def faces_count():
+    frame = get_latest_frame()
+    if frame is None:
+        return jsonify({'count': 0})
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+    return jsonify({'count': len(faces)})
 
 @app.route('/start_camera')
 def start_camera_route():

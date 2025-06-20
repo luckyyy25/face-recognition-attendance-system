@@ -46,13 +46,13 @@ const AddFacePage = () => {
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
-      <div className="bg-gray-100 p-10 rounded-3xl border border-gray-200 shadow-2xl w-full max-w-lg">
+      <div className="bg-gray-100 dark:bg-gray-900 p-10 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-2xl w-full max-w-lg transition-colors duration-500">
         <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           Register New Face
         </h1>
 
         {isSubmitted ? (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-md mb-4 text-center">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-md mb-4 text-center dark:bg-green-200 dark:text-green-900">
             <p className="text-lg font-semibold">Face registered successfully!</p>
           </div>
         ) : (
@@ -62,7 +62,7 @@ const AddFacePage = () => {
             <FormInput label="ID Number" name="id" value={formData.id} onChange={handleChange} icon={<FaIdBadge />} />
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2">
                 Role
               </label>
               <div className="flex gap-3">
@@ -77,8 +77,7 @@ const AddFacePage = () => {
                     if (roleValue === 'intern') bgColor = 'bg-gray-800';
 
                     if (isActive) {
-                      bgColor = 'bg-white';
-                      textColor = 'text-gray-800 font-bold';
+                      bgColor = 'bg-white dark:bg-white text-gray-800 font-bold';
                     }
 
                     return (
@@ -93,11 +92,10 @@ const AddFacePage = () => {
                     );
                   })}
                 </div>
-
             </div>
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2" htmlFor="image">
+              <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor="image">
                 Upload Photo
               </label>
               <div className="relative">
@@ -108,7 +106,7 @@ const AddFacePage = () => {
                   accept="image/*"
                   onChange={handleImageChange}
                   required
-                  className="w-full py-3 px-4 pl-12 rounded-lg bg-[#f5f5f5] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full py-3 px-4 pl-12 rounded-lg bg-[#f5f5f5] dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
                   <FaImage />
@@ -138,7 +136,7 @@ const AddFacePage = () => {
 
 const FormInput = ({ label, name, value, onChange, icon }) => (
   <div>
-    <label className="block text-gray-700 font-medium mb-2" htmlFor={name}>
+    <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor={name}>
       {label}
     </label>
     <div className="relative">
@@ -149,7 +147,7 @@ const FormInput = ({ label, name, value, onChange, icon }) => (
         value={value}
         onChange={onChange}
         required
-        className="w-full py-3 px-4 pl-12 rounded-lg bg-[#f5f5f5] border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="w-full py-3 px-4 pl-12 rounded-lg bg-[#f5f5f5] dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"
       />
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
         {icon}

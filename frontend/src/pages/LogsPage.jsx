@@ -1,89 +1,111 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const extractName = (path) => {
-  if (!path) return 'Unknown';
-  const fileName = path.split('/').pop().split('.')[0];
-  return fileName;
-};
-
 const LogsPage = () => {
-  const [logs, setLogs] = useState([]);
+  const [logsByDate, setLogsByDate] = useState({});
+  const [expandedDates, setExpandedDates] = useState({});
 
   useEffect(() => {
     axios.get("http://localhost:5000/logs")
-      .then(response => setLogs(response.data))
+      .then(response => {
+        const groupedLogs = {};
+
+        response.data.forEach(log => {
+          const date = log.timestamp.split(' ')[0];
+          if (!groupedLogs[date]) {
+            groupedLogs[date] = [];
+          }
+          groupedLogs[date].push(log);
+        });
+
+        setLogsByDate(groupedLogs);
+      })
       .catch(error => console.error("Error fetching logs:", error));
   }, []);
 
+  const toggleDate = (date) => {
+    setExpandedDates(prev => ({
+      ...prev,
+      [date]: !prev[date]
+    }));
+  };
+
+  const getDayName = (dateString) => {
+    const options = { weekday: 'long' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
+
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
-      <div className="bg-gray-100 p-10 rounded-3xl border border-gray-200 shadow-2xl w-full max-w-6xl">
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Entrance/Exit Logs</h1>
 
-        <h1 className="text-3xl font-extrabold text-center mb-8 text-gradient bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-          Entrance / Exit Logs
-        </h1>
+      {Object.keys(logsByDate).sort((a, b) => b.localeCompare(a)).map(date => (
+        <div key={date} className="mb-4 border rounded-lg shadow dark:border-gray-700">
+          <div
+            onClick={() => toggleDate(date)}
+            className="cursor-pointer bg-gray-200 dark:bg-gray-800 px-6 py-4 font-semibold text-lg flex justify-between items-center"
+          >
+            <span className="dark:text-white">{date} ({getDayName(date)})</span>
+            <span className="dark:text-white">{expandedDates[date] ? '▲' : '▼'}</span>
+          </div>
 
-        <div className="overflow-x-auto rounded-xl shadow-lg bg-white">
-          <table className="min-w-full table-fixed divide-y divide-gray-200 text-center">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">User</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">Time</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {logs.map((log, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-6 whitespace-nowrap text-left">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-20 w-20">
-                        <img
-                          className="h-20 w-20 rounded-full object-cover shadow-md"
-                          src={log.image ? `http://localhost:5000/${log.image}` : 'http://localhost:5000/models/default-avatar.png'}
-                          alt={log.fullname || 'User'}
-                          onError={(e) => {
-                            if (!e.target.src.includes('default-avatar.png')) {
-                              e.target.onerror = null;
-                              e.target.src = 'http://localhost:5000/models/default-avatar.png';
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="ml-6 text-left">
-                        <div className="text-lg font-bold text-gray-900">
-                          {log.fullname || extractName(log.name) || extractName(log.image)}
+          {expandedDates[date] && (
+            <div className="bg-white dark:bg-gray-900">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-100 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">User</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">ID</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Role</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Time</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  {logsByDate[date].map((log, index) => (
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-12 w-12">
+                            <img
+                              className="h-12 w-12 rounded-full object-cover"
+                              src={log.image
+                                ? `http://localhost:5000/${log.image}`
+                                : 'http://localhost:5000/models/default-avatar.png'}
+                              alt={log.fullname || log.name || 'User'}
+                              onError={(e) => {
+                                if (!e.target.src.includes('default-avatar.png')) {
+                                  e.target.onerror = null;
+                                  e.target.src = 'http://localhost:5000/models/default-avatar.png';
+                                }
+                              }}
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-lg font-medium text-gray-900 dark:text-white">{log.fullname || log.name}</div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-6 whitespace-nowrap text-lg text-gray-800">{log.id_number || 'N/A'}</td>
-                  <td className="px-6 py-6 whitespace-nowrap text-lg text-gray-800">{log.role || 'N/A'}</td>
-                  <td className="px-6 py-6 whitespace-nowrap text-lg text-gray-800">{log.timestamp}</td>
-                  <td className="px-6 py-6 whitespace-nowrap">
-                    <span className={`px-5 py-2 inline-flex text-base font-semibold rounded-full
-                      ${log.status === 'entry'
-                        ? 'bg-green-100 text-green-700 border border-green-300'
-                        : 'bg-red-100 text-red-700 border border-red-300'}
-                    `}>
-                      {log.status === 'entry' ? 'Entry' : 'Exit'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {logs.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="py-10 text-gray-500 text-lg">No logs found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-800 dark:text-gray-300">{log.id_number || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-800 dark:text-gray-300">{log.role || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-800 dark:text-gray-300">{log.timestamp.split(' ')[1]}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-3 py-1 inline-flex text-sm leading-6 font-semibold rounded-full ${
+                          log.status === 'entry'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {log.status === 'entry' ? 'Entry' : 'Exit'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-
-      </div>
+      ))}
     </div>
   );
 };
