@@ -30,8 +30,29 @@ def home():
 def detect():
     result = recognize_face()
     if result["status"] == "success":
-        log_attendance(result["identity"])
+        attendance_result = log_attendance(result["identity"])
+        if attendance_result:
+            if attendance_result['status'] == 'entry':
+                result["message"] = {
+                    "title": "Welcome Back!",
+                    "text": f"Nice to see you again, {attendance_result['fullname']}!",
+                    "type": "entry"
+                }
+            else:
+                result["message"] = {
+                    "title": "Goodbye!",
+                    "text": f"Take care, {attendance_result['fullname']}!",
+                    "type": "exit"
+                }
+        else:
+            # 1 dakika limiti nedeniyle log atlanmışsa:
+            result["message"] = None
+    else:
+        result["message"] = None  # Başarısız tanıma durumunda da message boş olsun
+
     return jsonify(result)
+
+
 
 @app.route('/models/<path:filename>')
 def serve_model_file(filename):
@@ -54,7 +75,8 @@ def register_employee():
     if not all([name, emp_id, role, image]):
         return jsonify({'error': 'Missing fields'}), 400
 
-    filename = secure_filename(f"{name.replace(' ', '_')}.jpg")
+    # 🔥 Artık isimde boşluk kalıyor, alt çizgi koymuyoruz
+    filename = secure_filename(name) + ".jpg"
     image.save(os.path.join(UPLOAD_FOLDER, filename))
 
     employees_col.insert_one({

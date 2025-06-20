@@ -20,13 +20,13 @@ const HomePage = () => {
 
         <div className="bg-white/40 backdrop-blur-md p-10 rounded-3xl shadow-lg hover:scale-105 transition">
           <div className="flex justify-center mb-6 text-success text-5xl">
-            <FaClipboardList />
+            <FaClipboardList color="#F3D5BD"  />
           </div>
           <h2 className="text-2xl font-semibold mb-3">View Attendance</h2>
           <p className="text-gray-700 mb-6">
             Monitor attendance records and logs easily.
           </p>
-          <a href="/logs" className="inline-block bg-[#f97316] text-white px-8 py-3 rounded-full font-semibold shadow-md hover:bg-green-700 transition">
+          <a href="/logs" className="inline-block bg-[#F3D5BD] text-white px-8 py-3 rounded-full font-semibold shadow-md hover:bg-green-700 transition">
          View Logs
         </a>
         </div>
