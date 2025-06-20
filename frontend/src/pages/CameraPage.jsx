@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 
 const CameraPage = () => {
   const [isActive, setIsActive] = useState(false);
-  const [identity, setIdentity] = useState(null);
+  const [message, setMessage] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
   const audioRef = useRef(null);
 
@@ -15,20 +15,19 @@ const CameraPage = () => {
         const response = await fetch(`http://localhost:5000/detect?ts=${Date.now()}`);
         const data = await response.json();
 
-        if (data.status === 'success') {
-          const name = data.identity.split('/').pop().split('.')[0];
-          setIdentity(name);
+        if (data.status === 'success' && data.message) {
+          setMessage(data.message);
           if (audioRef.current) audioRef.current.play();
 
           setTimeout(() => {
-            setIdentity(null);
+            setMessage(null);
           }, 5000);
         } else {
-          setIdentity(null);
+          setMessage(null);
         }
       } catch (error) {
         console.error('Face detection error:', error);
-        setIdentity(null);
+        setMessage(null);
       }
     }, 4000);
 
@@ -70,9 +69,11 @@ const CameraPage = () => {
             <p className="text-white text-lg">Click below to start recognition</p>
           )}
 
-          {isActive && identity && (
-            <div className="absolute top-6 left-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg animate-bounce text-lg font-semibold">
-              Welcome, <span className="font-bold">{identity}</span> 🎉
+          {isActive && message && (
+            <div className={`absolute top-6 left-6 px-6 py-3 rounded-xl shadow-lg animate-bounce text-lg font-semibold
+              ${message.type === 'entry' ? 'bg-green-500 text-white' : message.type === 'exit' ? 'bg-purple-500 text-white' : 'bg-yellow-500 text-white'}`}>
+              <div>{message.title}</div>
+              <div>{message.text}</div>
             </div>
           )}
         </div>

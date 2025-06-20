@@ -9,36 +9,32 @@ employees_collection = db["employees"]
 def get_attendance():
     records = []
     for record in attendance_collection.find({}, {"_id": 0}):
-        # Burada name = models/emre.jpg gibi
-        record["image"] = record["name"]  # 👈 name alanını image olarak da gönderiyoruz
+        record["image"] = record["name"]
         records.append(record)
     return records
-
 
 def log_attendance(identity):
     current_time = datetime.now()
 
-    # Aynı kişiye ait en son kayıt
     last_entry = attendance_collection.find_one(
         {"name": identity},
         sort=[("timestamp", -1)]
     )
 
-    # Giriş/Çıkış durumu belirleme
+    # Eğer daha önce giriş yapılmışsa
     if last_entry:
         last_time = datetime.strptime(last_entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-        if current_time - last_time < timedelta(seconds=10):
+        if current_time - last_time < timedelta(minutes=1):
             print(f"Skipping too frequent logging for {identity}")
-            return
+            return None  # 1 dk kuralı: log kaydedilmiyor
         status = "exit" if last_entry.get("status") == "entry" else "entry"
     else:
         status = "entry"
 
-    # Kullanıcı bilgisi al
     employee = employees_collection.find_one({"image": identity})
     if not employee:
         print(f"Employee not found for identity: {identity}")
-        return
+        return None
 
     data = {
         "name": identity,
@@ -50,3 +46,5 @@ def log_attendance(identity):
 
     attendance_collection.insert_one(data)
     print("Attendance logged with details:", data)
+
+    return {"fullname": employee.get("name"), "status": status}
