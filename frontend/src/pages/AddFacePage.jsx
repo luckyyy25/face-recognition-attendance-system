@@ -66,15 +66,15 @@ const AddFacePage = () => {
                 Role
               </label>
               <div className="flex gap-3">
-                  {['Employee', 'Student', 'Visitor'].map((option) => {
+                  {['Employee', 'Manager', 'Intern'].map((option) => {
                     const roleValue = option.toLowerCase();
                     const isActive = formData.role === roleValue;
 
                     let bgColor = '';
                     let textColor = 'text-white';
                     if (roleValue === 'employee') bgColor = 'bg-orange-500';
-                    if (roleValue === 'student') bgColor = 'bg-red-600';
-                    if (roleValue === 'visitor') bgColor = 'bg-gray-800';
+                    if (roleValue === 'manager') bgColor = 'bg-red-600';
+                    if (roleValue === 'intern') bgColor = 'bg-gray-800';
 
                     if (isActive) {
                       bgColor = 'bg-white';

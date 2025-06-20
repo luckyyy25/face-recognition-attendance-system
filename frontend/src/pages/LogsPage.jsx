@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-
 const extractName = (path) => {
   if (!path) return 'Unknown';
   const fileName = path.split('/').pop().split('.')[0];
   return fileName;
 };
-
 
 const LogsPage = () => {
   const [logs, setLogs] = useState([]);
@@ -17,8 +15,6 @@ const LogsPage = () => {
       .then(response => setLogs(response.data))
       .catch(error => console.error("Error fetching logs:", error));
   }, []);
-
-
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
@@ -33,6 +29,8 @@ const LogsPage = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">Time</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">Status</th>
               </tr>
@@ -40,28 +38,30 @@ const LogsPage = () => {
             <tbody className="bg-white divide-y divide-gray-100">
               {logs.map((log, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition">
-                 <td className="px-6 py-6 whitespace-nowrap text-left">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-20 w-20">
-                      <img
-                        className="h-20 w-20 rounded-full object-cover shadow-md"
-                        src={log.image ? `http://localhost:5000/${log.image}` : 'http://localhost:5000/models/default-avatar.png'}
-                        alt={log.fullname || 'User'}
-                        onError={(e) => {
-                          if (!e.target.src.includes('default-avatar.png')) {
-                            e.target.onerror = null;
-                            e.target.src = 'http://localhost:5000/models/default-avatar.png';
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="ml-6 text-left">
-                      <div className="text-lg font-bold text-gray-900">
-                        {log.fullname || extractName(log.name) || extractName(log.image)}
+                  <td className="px-6 py-6 whitespace-nowrap text-left">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-20 w-20">
+                        <img
+                          className="h-20 w-20 rounded-full object-cover shadow-md"
+                          src={log.image ? `http://localhost:5000/${log.image}` : 'http://localhost:5000/models/default-avatar.png'}
+                          alt={log.fullname || 'User'}
+                          onError={(e) => {
+                            if (!e.target.src.includes('default-avatar.png')) {
+                              e.target.onerror = null;
+                              e.target.src = 'http://localhost:5000/models/default-avatar.png';
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="ml-6 text-left">
+                        <div className="text-lg font-bold text-gray-900">
+                          {log.fullname || extractName(log.name) || extractName(log.image)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
+                  <td className="px-6 py-6 whitespace-nowrap text-lg text-gray-800">{log.id_number || 'N/A'}</td>
+                  <td className="px-6 py-6 whitespace-nowrap text-lg text-gray-800">{log.role || 'N/A'}</td>
                   <td className="px-6 py-6 whitespace-nowrap text-lg text-gray-800">{log.timestamp}</td>
                   <td className="px-6 py-6 whitespace-nowrap">
                     <span className={`px-5 py-2 inline-flex text-base font-semibold rounded-full
@@ -76,7 +76,7 @@ const LogsPage = () => {
               ))}
               {logs.length === 0 && (
                 <tr>
-                  <td colSpan="3" className="py-10 text-gray-500 text-lg">No logs found.</td>
+                  <td colSpan="5" className="py-10 text-gray-500 text-lg">No logs found.</td>
                 </tr>
               )}
             </tbody>

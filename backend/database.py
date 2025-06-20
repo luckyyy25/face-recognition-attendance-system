@@ -36,13 +36,39 @@ def log_attendance(identity):
         print(f"Employee not found for identity: {identity}")
         return None
 
-    data = {
-        "name": identity,
-        "fullname": employee.get("name"),
-        "role": employee.get("role"),
-        "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "status": status
-    }
+    def log_attendance(identity):
+        current_time = datetime.now()
+
+        last_entry = attendance_collection.find_one(
+            {"name": identity},
+            sort=[("timestamp", -1)]
+        )
+
+        if last_entry:
+            last_time = datetime.strptime(last_entry["timestamp"], "%Y-%m-%d %H:%M:%S")
+            if current_time - last_time < timedelta(seconds=10):
+                print(f"Skipping too frequent logging for {identity}")
+                return
+            status = "exit" if last_entry.get("status") == "entry" else "entry"
+        else:
+            status = "entry"
+
+        employee = employees_collection.find_one({"image": identity})
+        if not employee:
+            print(f"Employee not found for identity: {identity}")
+            return
+
+        data = {
+            "name": identity,
+            "fullname": employee.get("name"),
+            "role": employee.get("role"),
+            "id_number": employee.get("id"),
+            "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": status
+        }
+
+        attendance_collection.insert_one(data)
+        print("Attendance logged with details:", data)
 
     attendance_collection.insert_one(data)
     print("Attendance logged with details:", data)
