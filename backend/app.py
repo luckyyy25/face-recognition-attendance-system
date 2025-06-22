@@ -25,7 +25,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def home():
     return "Face Recognition Attendance System Backend Running!"
 
-# Yüz tanıma endpointi
 @app.route('/detect', methods=['GET'])
 def detect():
     result = recognize_face()
@@ -38,19 +37,15 @@ def detect():
                     "text": f"Nice to see you again, {attendance_result['fullname']}!",
                     "type": "entry"
                 }
-            else:
+            elif attendance_result['status'] == 'exit':
                 result["message"] = {
                     "title": "Goodbye!",
                     "text": f"Take care, {attendance_result['fullname']}!",
                     "type": "exit"
                 }
-        else:
-            # 1 dakika limiti nedeniyle log atlanmışsa:
-            result["message"] = None
-    else:
-        result["message"] = None  # Başarısız tanıma durumunda da message boş olsun
 
     return jsonify(result)
+
 
 
 
@@ -75,7 +70,7 @@ def register_employee():
     if not all([name, emp_id, role, image]):
         return jsonify({'error': 'Missing fields'}), 400
 
-    # 🔥 Artık isimde boşluk kalıyor, alt çizgi koymuyoruz
+
     filename = secure_filename(name) + ".jpg"
     image.save(os.path.join(UPLOAD_FOLDER, filename))
 

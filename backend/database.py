@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from datetime import datetime, timedelta
+import os
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["face_recognition_db"]
@@ -16,59 +17,37 @@ def get_attendance():
 def log_attendance(identity):
     current_time = datetime.now()
 
+
+    identity_filename = os.path.basename(identity)
+    identity_path = f"models/{identity_filename}"
+
     last_entry = attendance_collection.find_one(
-        {"name": identity},
+        {"name": identity_path},
         sort=[("timestamp", -1)]
     )
 
-    # Eğer daha önce giriş yapılmışsa
     if last_entry:
         last_time = datetime.strptime(last_entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-        if current_time - last_time < timedelta(minutes=1):
-            print(f"Skipping too frequent logging for {identity}")
-            return None  # 1 dk kuralı: log kaydedilmiyor
+        if current_time - last_time < timedelta(seconds=10):
+            print(f"Skipping too frequent logging for {identity_path}")
+            return None
         status = "exit" if last_entry.get("status") == "entry" else "entry"
     else:
         status = "entry"
 
-    employee = employees_collection.find_one({"image": identity})
+    employee = employees_collection.find_one({"image": identity_path})
     if not employee:
-        print(f"Employee not found for identity: {identity}")
+        print(f"Employee not found for identity: {identity_path}")
         return None
 
-    def log_attendance(identity):
-        current_time = datetime.now()
-
-        last_entry = attendance_collection.find_one(
-            {"name": identity},
-            sort=[("timestamp", -1)]
-        )
-
-        if last_entry:
-            last_time = datetime.strptime(last_entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-            if current_time - last_time < timedelta(seconds=10):
-                print(f"Skipping too frequent logging for {identity}")
-                return
-            status = "exit" if last_entry.get("status") == "entry" else "entry"
-        else:
-            status = "entry"
-
-        employee = employees_collection.find_one({"image": identity})
-        if not employee:
-            print(f"Employee not found for identity: {identity}")
-            return
-
-        data = {
-            "name": identity,
-            "fullname": employee.get("name"),
-            "role": employee.get("role"),
-            "id_number": employee.get("id"),
-            "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "status": status
-        }
-
-        attendance_collection.insert_one(data)
-        print("Attendance logged with details:", data)
+    data = {
+        "name": identity_path,
+        "fullname": employee.get("name"),
+        "role": employee.get("role"),
+        "id_number": employee.get("id"),
+        "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": status
+    }
 
     attendance_collection.insert_one(data)
     print("Attendance logged with details:", data)

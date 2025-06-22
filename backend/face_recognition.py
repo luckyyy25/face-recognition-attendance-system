@@ -1,6 +1,8 @@
 import cv2
+import os
 from deepface import DeepFace
 from camera_stream import get_latest_frame
+import tempfile
 
 def recognize_face():
     try:
@@ -18,12 +20,19 @@ def recognize_face():
         if len(faces) == 0:
             return {"status": "failed", "message": "No face detected"}
 
+        # Geçici dosyaya kaydet
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmpfile:
+            cv2.imwrite(tmpfile.name, frame)
+            tmp_path = tmpfile.name
+
         # DeepFace ile tanıma yap
-        result = DeepFace.find(img_path=frame, db_path="models/", enforce_detection=False)
+        result = DeepFace.find(img_path=tmp_path, db_path="models/", enforce_detection=False)
         if result and len(result[0]) > 0:
+
             identity_path = result[0]['identity'][0]
-            identity_filename = identity_path.split("/")[-1]
+            identity_filename = os.path.basename(identity_path)
             return {"status": "success", "identity": f"models/{identity_filename}"}
+
         else:
             return {"status": "failed", "message": "Face not recognized"}
 

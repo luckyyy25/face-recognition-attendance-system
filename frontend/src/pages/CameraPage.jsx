@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 
 const CameraPage = () => {
   const [isActive, setIsActive] = useState(false);
-  const [identity, setIdentity] = useState(null);
+  const [message, setMessage] = useState(null);
   const [showCrowdWarning, setShowCrowdWarning] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const audioRef = useRef(null);
@@ -19,15 +19,14 @@ const CameraPage = () => {
         const data = await response.json();
 
         if (data.status === 'success') {
-          const name = data.identity.split('/').pop().split('.')[0];
-          setIdentity(name);
+          setMessage(data.message);
           if (audioRef.current) audioRef.current.play();
 
           setTimeout(() => {
-            setIdentity(null);
+            setMessage(null);
           }, 5000);
         } else {
-          setIdentity(null);
+          setMessage(null);
         }
 
         // Crowd detection logic
@@ -44,7 +43,7 @@ const CameraPage = () => {
         }
       } catch (error) {
         console.error('Error:', error);
-        setIdentity(null);
+        setMessage(null);
       }
     }, 4000);
 
@@ -83,9 +82,10 @@ const CameraPage = () => {
             <p className="text-white text-lg">Click the button to start camera</p>
           )}
 
-          {isActive && identity && (
+          {isActive && message && (
             <div className="absolute top-5 left-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg animate-bounce z-20">
-              Welcome, <strong>{identity}</strong>
+              <div className="font-bold text-lg">{message.title}</div>
+              <div>{message.text}</div>
             </div>
           )}
 
