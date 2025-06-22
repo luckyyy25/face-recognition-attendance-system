@@ -12,7 +12,7 @@ A comprehensive attendance tracking solution that leverages facial recognition t
 
 **User Management**
 - Easy registration of new faces with personal information
-- Support for multiple user roles: Employee, Student, Visitor
+- Support for multiple user roles: Employee, Manager, Intern
 - Image upload and preview functionality
 - Secure file handling with proper validation
 
@@ -127,8 +127,8 @@ A comprehensive attendance tracking solution that leverages facial recognition t
 1. Navigate to the "Add Face" section in the web interface
 2. Complete the registration form with the following information:
    - Full Name: User's complete name
-   - ID Number: Unique identifier (employee ID, student ID, etc.)
-   - Role: Select from Employee, Student, or Visitor
+   - ID Number: Unique identifier (employee ID,  ID, etc.)
+   - Role: Select from Employee, Manager, or Intern
    - Photo: Upload a clear, front-facing photograph
 3. Submit the form to register the user in the system
 
@@ -224,7 +224,7 @@ face-recognition-attendance/
   "_id": ObjectId,
   "name": "User Full Name",
   "id": "Unique Identifier",
-  "role": "employee|student|visitor",
+  "role": "employee|manager|intern",
   "image": "models/filename.jpg"
 }
 ```
@@ -235,7 +235,7 @@ face-recognition-attendance/
   "_id": ObjectId,
   "name": "models/filename.jpg",
   "fullname": "User Full Name",
-  "role": "employee|student|visitor",
+  "role": "employee|manager|intern",
   "timestamp": "YYYY-MM-DD HH:MM:SS",
   "status": "entry|exit"
 }
